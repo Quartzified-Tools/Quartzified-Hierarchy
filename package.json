@@ -1,0 +1,22 @@
+{
+  "name": "com.quartzified.hierarchy",
+  "version": "0.1.0",
+  "displayName": "Quartzified Hierarchy",
+  "description": "Unity Hierarchy Extension",
+  "unity": "2020.3",
+  "unityRelease": "20f1",
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "keywords": [
+    "Quartzified",
+    "Utility",
+    "Editor"
+  ],
+  "author": {
+    "name": "Quartzi",
+    "email": "virgil@quartzi.io",
+    "url": "https://www.quartzi.io"
+  },
+  "type": "tool"
+}

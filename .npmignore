@@ -1,0 +1,9 @@
+artifacts/**
+build/**
+.DS_Store
+.npmrc
+.npmignore
+.gitignore
+.gitlab-ci.yml
+build.bat
+build.sh
