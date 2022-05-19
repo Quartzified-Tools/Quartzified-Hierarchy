@@ -13,6 +13,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using System.Text.RegularExpressions;
 
 namespace Quartzified.Custom.Hierarchy
 {
@@ -45,7 +46,12 @@ namespace Quartzified.Custom.Hierarchy
 
         HierarchySettings.ThemeData ThemeData
         {
-            get { return settings.usedTheme; }
+            get { return settings.usedThemeData; }
+        }
+
+        HierarchySettings.HeaderTagData HeaderTagData
+        {
+            get { return settings.usedHeaderTagData; }
         }
 
         int deepestRow = int.MinValue;
@@ -79,7 +85,108 @@ namespace Quartzified.Custom.Hierarchy
         {
             InternalReflection();
             EditorApplication.update += EditorAwake;
+            EditorApplication.hierarchyWindowItemOnGUI += UpdateHierarchyItem;
             AssetDatabase.importPackageCompleted += ImportPackageCompleted;
+        }
+
+        void UpdateHierarchyItem(int instanceID, Rect selectionRect)
+        {
+            GameObject hierarchyObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+
+            if(hierarchyObject != null && hierarchyObject.name.StartsWith("%", System.StringComparison.Ordinal))
+            {
+                string newName = hierarchyObject.name;
+                switch (GetFirstSurroundedString(hierarchyObject.name).ToLower())
+                {
+                    case "red":
+                        newName = newName.Substring(5, newName.Length - 5);
+                        ChangeHierarchyItem(selectionRect, newName, Color.red);
+                        break;
+                    case "blue":
+                        newName = newName.Substring(6, newName.Length - 6);
+                        ChangeHierarchyItem(selectionRect, newName, Color.blue);
+                        break;
+                    case "cyan":
+                        newName = newName.Substring(6, newName.Length - 6);
+                        ChangeHierarchyItem(selectionRect, newName, Color.cyan);
+                        break;
+                    case "green":
+                        newName = newName.Substring(7, newName.Length - 7);
+                        ChangeHierarchyItem(selectionRect, newName, Color.green);
+                        break;
+                    case "yellow":
+                        newName = newName.Substring(8, newName.Length - 8);
+                        ChangeHierarchyItem(selectionRect, newName, Color.yellow);
+                        break;
+                    case "1":
+                        newName = newName.Substring(3, newName.Length - 3);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagOne);
+                        break;
+                    case "one":
+                        newName = newName.Substring(5, newName.Length - 5);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagOne);
+                        break;
+                    case "2":
+                        newName = newName.Substring(3, newName.Length - 3);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagTwo);
+                        break;
+                    case "two":
+                        newName = newName.Substring(5, newName.Length - 5);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagTwo);
+                        break;
+                    case "3":
+                        newName = newName.Substring(3, newName.Length - 3);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagThree);
+                        break;
+                    case "three":
+                        newName = newName.Substring(7, newName.Length - 7);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagThree);
+                        break;
+                    case "4":
+                        newName = newName.Substring(3, newName.Length - 3);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFour);
+                        break;
+                    case "four":
+                        newName = newName.Substring(6, newName.Length - 6);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFour);
+                        break;
+                    case "5":
+                        newName = newName.Substring(3, newName.Length - 3);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFive);
+                        break;
+                    case "five":
+                        newName = newName.Substring(6, newName.Length - 6);
+                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFive);
+                        break;
+                }
+            }
+        }
+
+        static void ChangeHierarchyItem(Rect selectionRect, string name, Color color)
+        {
+            color.a = 1;
+            EditorGUI.DrawRect(selectionRect, color);
+            EditorGUI.DropShadowLabel(selectionRect, name);
+        }
+
+        static string[] GetSurroundedString(string value)
+        {
+            string[] results = Regex.Matches(value, @"%(.+?)%")
+                .Cast<Match>()
+                .Select(m => m.Groups[1].Value)
+                .ToArray();
+
+            return results;
+        }
+
+        static string GetFirstSurroundedString(string value)
+        {
+            string[] results = Regex.Matches(value, @"%(.+?)%")
+                .Cast<Match>()
+                .Select(m => m.Groups[1].Value)
+                .ToArray();
+
+            return results[0];
         }
 
         static List<Type> InternalEditorType = new List<Type>();

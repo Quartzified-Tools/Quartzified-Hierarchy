@@ -59,6 +59,35 @@ namespace Quartzified.Custom.Hierarchy
             }
         }
 
+        [Serializable]
+        public struct HeaderTagData
+        {
+            public Color tagOne;
+            public Color tagTwo;
+            public Color tagThree;
+            public Color tagFour;
+            public Color tagFive;
+
+            public HeaderTagData(HeaderTagData tagData)
+            {
+                tagOne = tagData.tagOne;
+                tagTwo = tagData.tagTwo;
+                tagThree = tagData.tagThree;
+                tagFour = tagData.tagFour;
+                tagFive = tagData.tagFive;
+            }
+
+            public void BlendMultiply(Color blend)
+            {
+                tagOne = tagOne * blend;
+                tagTwo = tagTwo * blend;
+                tagThree = tagThree * blend;
+                tagFour = tagFour * blend;
+                tagFive = tagFive * blend;
+
+            }
+        }
+
         ///<summary>Define background color using prefix.</summary>
         [Serializable]
         public struct InstantBackgroundColor
@@ -99,7 +128,7 @@ namespace Quartzified.Custom.Hierarchy
         public ThemeData playmodeTheme;
         private bool useThemePlaymode = false;
 
-        public ThemeData usedTheme
+        public ThemeData usedThemeData
         {
             get
             {
@@ -118,6 +147,34 @@ namespace Quartzified.Custom.Hierarchy
                 {
                     useThemePlaymode = false;
                     return EditorGUIUtility.isProSkin ? professionalTheme : personalTheme;
+                }
+            }
+        }
+
+        public HeaderTagData personalTagData;
+        public HeaderTagData professionalTagData;
+        public HeaderTagData playmodeTagData;
+        private bool useHeaderTagsPlaymode = false;
+
+        public HeaderTagData usedHeaderTagData
+        {
+            get
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    if (useHeaderTagsPlaymode == false)
+                    {
+                        playmodeTagData = new HeaderTagData(EditorGUIUtility.isProSkin ? professionalTagData : personalTagData);
+                        playmodeTagData.BlendMultiply(GUI.color);
+                        useHeaderTagsPlaymode = true;
+                    }
+
+                    return playmodeTagData;
+                }
+                else
+                {
+                    useHeaderTagsPlaymode = false;
+                    return EditorGUIUtility.isProSkin ? professionalTagData : personalTagData;
                 }
             }
         }
@@ -555,7 +612,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(selectionColorHelpBox);
 
                         ColorField colorRowEven = new ColorField("Row Even");
-                        colorRowEven.value = settings.usedTheme.colorRowEven;
+                        colorRowEven.value = settings.usedThemeData.colorRowEven;
                         colorRowEven.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorRowEven.RegisterValueChangedCallback((evt) =>
                         {
@@ -571,7 +628,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorRowEven);
 
                         ColorField colorRowOdd = new ColorField("Row Odd");
-                        colorRowOdd.value = settings.usedTheme.colorRowOdd;
+                        colorRowOdd.value = settings.usedThemeData.colorRowOdd;
                         colorRowOdd.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorRowOdd.RegisterValueChangedCallback((evt) =>
                         {
@@ -587,7 +644,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorRowOdd);
 
                         ColorField colorGrid = new ColorField("Grid Color");
-                        colorGrid.value = settings.usedTheme.colorGrid;
+                        colorGrid.value = settings.usedThemeData.colorGrid;
                         colorGrid.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorGrid.RegisterValueChangedCallback((evt) =>
                         {
@@ -603,7 +660,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorGrid);
 
                         ColorField colorTreeView = new ColorField("TreeView");
-                        colorTreeView.value = settings.usedTheme.colorTreeView;
+                        colorTreeView.value = settings.usedThemeData.colorTreeView;
                         colorTreeView.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorTreeView.RegisterValueChangedCallback((evt) =>
                         {
@@ -619,7 +676,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorTreeView);
 
                         ColorField colorLockIcon = new ColorField("Lock Icon");
-                        colorLockIcon.value = settings.usedTheme.colorLockIcon;
+                        colorLockIcon.value = settings.usedThemeData.colorLockIcon;
                         colorLockIcon.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorLockIcon.RegisterValueChangedCallback((evt) =>
                         {
@@ -635,7 +692,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorLockIcon);
 
                         ColorField tagColor = new ColorField("Tag Text");
-                        tagColor.value = settings.usedTheme.tagColor;
+                        tagColor.value = settings.usedThemeData.tagColor;
                         tagColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         tagColor.RegisterValueChangedCallback((evt) =>
                         {
@@ -651,7 +708,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(tagColor);
 
                         ColorField layerColor = new ColorField("Layer Text");
-                        layerColor.value = settings.usedTheme.layerColor;
+                        layerColor.value = settings.usedThemeData.layerColor;
                         layerColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         layerColor.RegisterValueChangedCallback((evt) =>
                         {
@@ -667,7 +724,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(layerColor);
 
                         ColorField colorHeaderTitle = new ColorField("Header Title");
-                        colorHeaderTitle.value = settings.usedTheme.colorHeaderTitle;
+                        colorHeaderTitle.value = settings.usedThemeData.colorHeaderTitle;
                         colorHeaderTitle.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorHeaderTitle.RegisterValueChangedCallback((evt) =>
                         {
@@ -683,7 +740,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorHeaderTitle);
 
                         ColorField colorHeaderBackground = new ColorField("Header Background");
-                        colorHeaderBackground.value = settings.usedTheme.colorHeaderBackground;
+                        colorHeaderBackground.value = settings.usedThemeData.colorHeaderBackground;
                         colorHeaderBackground.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         colorHeaderBackground.RegisterValueChangedCallback((evt) =>
                         {
@@ -699,7 +756,7 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(colorHeaderBackground);
 
                         ColorField comSelBGColor = new ColorField("Component Selection");
-                        comSelBGColor.value = settings.usedTheme.comSelBGColor;
+                        comSelBGColor.value = settings.usedThemeData.comSelBGColor;
                         comSelBGColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
                         comSelBGColor.RegisterValueChangedCallback((evt) =>
                         {
@@ -715,7 +772,101 @@ namespace Quartzified.Custom.Hierarchy
                         verticalLayout.Add(comSelBGColor);
                     }
 
-                    Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+                    var headerTags = new Label("Header Tags");
+                    headerTags.StyleFont(FontStyle.Bold);
+                    headerTags.StyleMargin(0, 0, TITLE_MARGIN_TOP, TITLE_MARGIN_BOTTOM);
+                    verticalLayout.Add(headerTags);
+
+                    if (EditorApplication.isPlayingOrWillChangePlaymode)
+                    {
+                        EditorHelpBox themeWarningPlaymode =
+                            new EditorHelpBox("This setting only available on edit mode.", MessageType.Info);
+                        verticalLayout.Add(themeWarningPlaymode);
+                    }
+                    else
+                    {
+                        ColorField tagOneColor = new ColorField("Header (1)");
+                        tagOneColor.value = settings.usedHeaderTagData.tagOne;
+                        tagOneColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                        tagOneColor.RegisterValueChangedCallback((evt) =>
+                        {
+                            Undo.RecordObject(settings, "Change Settings");
+
+                            if (EditorGUIUtility.isProSkin)
+                                settings.professionalTagData.tagOne = evt.newValue;
+                            else
+                                settings.personalTagData.tagOne = evt.newValue;
+
+                            settings.OnSettingsChanged();
+                        });
+                        verticalLayout.Add(tagOneColor);
+
+                        ColorField tagTwoColor = new ColorField("Header (2)");
+                        tagTwoColor.value = settings.usedHeaderTagData.tagTwo;
+                        tagTwoColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                        tagTwoColor.RegisterValueChangedCallback((evt) =>
+                        {
+                            Undo.RecordObject(settings, "Change Settings");
+
+                            if (EditorGUIUtility.isProSkin)
+                                settings.professionalTagData.tagTwo = evt.newValue;
+                            else
+                                settings.personalTagData.tagTwo = evt.newValue;
+
+                            settings.OnSettingsChanged();
+                        });
+                        verticalLayout.Add(tagTwoColor);
+
+                        ColorField tagThreeColor = new ColorField("Header (3)");
+                        tagThreeColor.value = settings.usedHeaderTagData.tagThree;
+                        tagThreeColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                        tagThreeColor.RegisterValueChangedCallback((evt) =>
+                        {
+                            Undo.RecordObject(settings, "Change Settings");
+
+                            if (EditorGUIUtility.isProSkin)
+                                settings.professionalTagData.tagThree = evt.newValue;
+                            else
+                                settings.personalTagData.tagThree = evt.newValue;
+
+                            settings.OnSettingsChanged();
+                        });
+                        verticalLayout.Add(tagThreeColor);
+
+                        ColorField tagFourColor = new ColorField("Header (4)");
+                        tagFourColor.value = settings.usedHeaderTagData.tagFour;
+                        tagFourColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                        tagFourColor.RegisterValueChangedCallback((evt) =>
+                        {
+                            Undo.RecordObject(settings, "Change Settings");
+
+                            if (EditorGUIUtility.isProSkin)
+                                settings.professionalTagData.tagFour = evt.newValue;
+                            else
+                                settings.personalTagData.tagFour = evt.newValue;
+
+                            settings.OnSettingsChanged();
+                        });
+                        verticalLayout.Add(tagFourColor);
+
+                        ColorField tagFiveColor = new ColorField("Header (5)");
+                        tagFiveColor.value = settings.usedHeaderTagData.tagFive;
+                        tagFiveColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                        tagFiveColor.RegisterValueChangedCallback((evt) =>
+                        {
+                            Undo.RecordObject(settings, "Change Settings");
+
+                            if (EditorGUIUtility.isProSkin)
+                                settings.professionalTagData.tagFive = evt.newValue;
+                            else
+                                settings.personalTagData.tagFive = evt.newValue;
+
+                            settings.OnSettingsChanged();
+                        });
+                        verticalLayout.Add(tagFiveColor);
+                    }
+
+                        Undo.undoRedoPerformed -= OnUndoRedoPerformed;
                     Undo.undoRedoPerformed += OnUndoRedoPerformed;
                 },
 
