@@ -93,7 +93,7 @@ namespace Quartzified.Custom.Hierarchy
         {
             GameObject hierarchyObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 
-            if(hierarchyObject != null && hierarchyObject.name.StartsWith("%", System.StringComparison.Ordinal))
+            if (hierarchyObject != null && hierarchyObject.name.StartsWith("%", System.StringComparison.Ordinal))
             {
                 string newName = hierarchyObject.name;
                 switch (GetFirstSurroundedString(hierarchyObject.name).ToLower())
@@ -1740,10 +1740,10 @@ namespace Quartzified.Custom.Hierarchy
 
             internal static GUIStyle TreeBoldLabel
             {
-                get { return TreeView.DefaultStyles.boldLabel; }
+                get { return UnityEditor.IMGUI.Controls.TreeView.DefaultStyles.boldLabel; }
             }
 
-            internal static GUIStyle TreeLabel = new GUIStyle(TreeView.DefaultStyles.label)
+            internal static GUIStyle TreeLabel = new GUIStyle(UnityEditor.IMGUI.Controls.TreeView.DefaultStyles.label)
             {
                 richText = true,
                 normal = new GUIStyleState() { textColor = Color.white }
