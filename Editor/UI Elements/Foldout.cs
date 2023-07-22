@@ -1,16 +1,9 @@
-﻿using System;
-using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-#if UNITY_EDITOR
-using UnityEditor;
-using UnityEditor.UIElements;
 
-#endif
-
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
-#if UNITY_EDITOR
     public class Foldout : VisualElement
     {
         public Image imageElement;
@@ -120,50 +113,6 @@ namespace Quartzified.Custom.Hierarchy
         new public void Add(VisualElement visualElement)
         {
             contentElement.Add(visualElement);
-        }
-    }
-
-    public class EditorHelpBox : VisualElement
-    {
-        public string Label
-        {
-            get { return label; }
-            set { label = value; }
-        }
-
-        private string label = "";
-
-        public EditorHelpBox(string text, MessageType messageType, bool wide = true)
-        {
-            style.marginLeft = style.marginRight = style.marginTop = style.marginBottom = 4;
-            Label = text;
-
-            IMGUIContainer iMGUIContainer = new IMGUIContainer(() => { EditorGUILayout.HelpBox(label, messageType, wide); });
-
-            iMGUIContainer.name = nameof(IMGUIContainer);
-            Add(iMGUIContainer);
-        }
-    }
-
-#endif
-
-    public class HorizontalLayout : VisualElement
-    {
-        public HorizontalLayout()
-        {
-            name = nameof(HorizontalLayout);
-            this.StyleFlexDirection(FlexDirection.Row);
-            this.StyleFlexGrow(1);
-        }
-    }
-
-    public class VerticalLayout : VisualElement
-    {
-        public VerticalLayout()
-        {
-            name = nameof(VerticalLayout);
-            this.StyleFlexDirection(FlexDirection.Column);
-            this.StyleFlexGrow(1);
         }
     }
 }

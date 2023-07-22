@@ -2,11 +2,10 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
-using Foldout = Quartzified.Custom.Hierarchy.Foldout;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
-    public class InstantInspector : EditorWindow
+    public class QuickInspect : EditorWindow
     {
         public enum FillMode
         {
@@ -20,9 +19,9 @@ namespace Quartzified.Custom.Hierarchy
         List<Object> components = new List<Object>();
         List<Foldout> folouts = new List<Foldout>();
 
-        public static InstantInspector OpenEditor()
+        public static QuickInspect OpenEditor()
         {
-            InstantInspector window = GetWindow<InstantInspector>("Instant Inspector");
+            QuickInspect window = GetWindow<QuickInspect>("Quick Inspect");
             window.titleContent.image = EditorGUIUtility.IconContent("UnityEditor.InspectorWindow").image;
             return window;
         }

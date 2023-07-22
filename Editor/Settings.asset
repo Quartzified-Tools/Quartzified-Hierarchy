@@ -27,8 +27,8 @@ MonoBehaviour:
   professionalTheme:
     colorRowEven: {r: 0.21176471, g: 0.21176471, b: 0.21176471, a: 1}
     colorRowOdd: {r: 0.1981132, g: 0.1981132, b: 0.1981132, a: 1}
-    colorGrid: {r: 0.10653259, g: 0.10793318, b: 0.13207549, a: 1}
-    colorTreeView: {r: 0.764151, g: 0.61636704, b: 0.61636704, a: 0}
+    colorGrid: {r: 0.16981131, g: 0.16981131, b: 0.16981131, a: 1}
+    colorTreeView: {r: 0.39607847, g: 0.39607847, b: 0.39607847, a: 1}
     colorLockIcon: {r: 0.69803923, g: 0.69803923, b: 0.69803923, a: 1}
     tagColor: {r: 1, g: 1, b: 1, a: 1}
     layerColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
@@ -37,22 +37,36 @@ MonoBehaviour:
     colorHeaderTitle: {r: 1, g: 1, b: 1, a: 1}
     colorHeaderBackground: {r: 1, g: 1, b: 1, a: 1}
   playmodeTheme:
-    colorRowEven: {r: 0.10388456, g: 0.10388456, b: 0.10388456, a: 1}
-    colorRowOdd: {r: 0.10773214, g: 0.10773214, b: 0.10773214, a: 1}
-    colorGrid: {r: 0.07887532, g: 0.07887532, b: 0.07887532, a: 1}
-    colorTreeView: {r: 0.20584534, g: 0.20584534, b: 0.20584534, a: 1}
-    colorLockIcon: {r: 0.34243432, g: 0.34243432, b: 0.34243432, a: 1}
-    tagColor: {r: 0.3462819, g: 0.3462819, b: 0.3462819, a: 1}
-    layerColor: {r: 0.3462819, g: 0.3462819, b: 0.3462819, a: 1}
-    comSelBGColor: {r: 0.490566, g: 0.07887532, b: 0.07887532, a: 0.5529412}
-    selectionColor: {r: 0.08464668, g: 0.17891231, b: 0.2597114, a: 1}
-    colorHeaderTitle: {r: 0.40399554, g: 0.40399554, b: 0.40399554, a: 1}
-    colorHeaderBackground: {r: 0.2462449, g: 0.2462449, b: 0.2462449, a: 1}
+    colorRowEven: {r: 0.16941176, g: 0.16941176, b: 0.16941176, a: 1}
+    colorRowOdd: {r: 0.15849057, g: 0.15849057, b: 0.15849057, a: 1}
+    colorGrid: {r: 0.085226074, g: 0.086346544, b: 0.105660394, a: 1}
+    colorTreeView: {r: 0.6113208, g: 0.49309364, b: 0.49309364, a: 0}
+    colorLockIcon: {r: 0.5584314, g: 0.5584314, b: 0.5584314, a: 1}
+    tagColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+    layerColor: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 1}
+    comSelBGColor: {r: 0, g: 0, b: 0, a: 0.5019608}
+    selectionColor: {r: 0.13803922, g: 0.2917647, b: 0.42352945, a: 1}
+    colorHeaderTitle: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+    colorHeaderBackground: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  tagData:
+    headerCount: 5
+    headerTag:
+    - Red
+    - Blue
+    - Green
+    - Header
+    - '%2%'
+    headerColor:
+    - {r: 1, g: 0, b: 0, a: 0}
+    - {r: 0, g: 0.03938794, b: 1, a: 0}
+    - {r: 0.14090152, g: 0.6320754, b: 0.008944447, a: 0}
+    - {r: 0, g: 0, b: 0, a: 0}
+    - {r: 0.4056604, g: 0.024875412, b: 0.35751155, a: 0}
   activeHierarchy: 1
   displayCustomObjectIcon: 1
-  displayTreeView: 0
+  displayTreeView: 1
   displayRowBackground: 1
-  displayGrid: 0
+  displayGrid: 1
   displayStaticButton: 1
   offSetIconAfterName: 8
   displayComponents: 1
@@ -63,7 +77,7 @@ MonoBehaviour:
   - RectTransform
   componentLimited: 0
   componentSize: 16
-  componentSpacing: 2
+  componentSpacing: 0
   displayTag: 0
   tagAlignment: 0
   displayLayer: 0

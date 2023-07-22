@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
     public static class Texture2DExtensions
     {

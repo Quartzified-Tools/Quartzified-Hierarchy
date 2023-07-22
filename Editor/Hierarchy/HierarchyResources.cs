@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
     [CreateAssetMenu(fileName = "Hierarchy Resource", menuName = "Quartzified/Editor/Hierarchy/Hierarchy Resource")]
     internal class HierarchyResources : ScriptableObject

@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UIElements;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEditor.UIElements;
 using UnityEngine;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
     public sealed class SelectionsRenamePopup : EditorWindow
     {
         static EditorWindow window;
+        Label labelField;
         TextField textField;
         EnumField enumModeField;
         EditorHelpBox helpBox;
@@ -30,7 +29,7 @@ namespace Quartzified.Custom.Hierarchy
                 window = ScriptableObject.CreateInstance<SelectionsRenamePopup>();
 
             Vector2 v2 = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
-            window.position = new Rect(v2.x, v2.y, 200, 70);
+            window.position = new Rect(v2.x, v2.y, 200, 92);
             window.ShowPopup();
             window.Focus();
 
@@ -48,6 +47,13 @@ namespace Quartzified.Custom.Hierarchy
             Color c = new Color32(58, 121, 187, 255);
             rootVisualElement.StyleBorderColor(c);
             rootVisualElement.StyleJustifyContent(Justify.Center);
+
+            labelField = new Label();
+            labelField.text = "Quick Rename";
+            labelField.StylePaddingTop(4);
+            labelField.StylePaddingLeft(4);
+            labelField.StylePaddingBottom(4);
+            rootVisualElement.Add(labelField);
 
             textField = new TextField();
             textField.value = "New Name...";
@@ -79,11 +85,11 @@ namespace Quartzified.Custom.Hierarchy
         void OnModeChanged(Enum mode)
         {
             Rect rect = window.position;
-            rect.height = 70;
+            rect.height = 92;
 
             if (!System.Enum.Equals(mode, Mode.None))
             {
-                rect.height = 70;
+                rect.height = 92;
                 if (!IsSelectionsSameParent())
                 {
                     helpBox.StyleDisplay(true);
@@ -96,7 +102,7 @@ namespace Quartzified.Custom.Hierarchy
             }
             else
             {
-                rect.height = 70;
+                rect.height = 92;
                 helpBox.StyleDisplay(false);
             }
 

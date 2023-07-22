@@ -3,16 +3,15 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using UnityEditor;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
     public class SceneRenamePopup : EditorWindow
     {
         static EditorWindow window;
         public Scene scene;
-        TextField nameField;
 
-        [System.Obsolete("Use ShowPopup(Scene) instead.")]
-        new public static SceneRenamePopup ShowPopup() => null;
+        Label labelField;
+        TextField nameField;
 
         public static SceneRenamePopup ShowPopup(Scene scene)
         {
@@ -20,7 +19,7 @@ namespace Quartzified.Custom.Hierarchy
                 window = ScriptableObject.CreateInstance<SceneRenamePopup>();
 
             Vector2 v2 = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
-            window.position = new Rect(v2.x, v2.y, 200, 50);
+            window.position = new Rect(v2.x, v2.y, 200, 68);
             window.ShowPopup();
             window.Focus();
 
@@ -40,6 +39,13 @@ namespace Quartzified.Custom.Hierarchy
             Color c = new Color32(58, 121, 187, 255);
             rootVisualElement.StyleBorderColor(c);
             rootVisualElement.StyleJustifyContent(Justify.Center);
+
+            labelField = new Label();
+            labelField.text = "Quick Rename";
+            labelField.StylePaddingTop(4);
+            labelField.StylePaddingLeft(4);
+            labelField.StylePaddingBottom(4);
+            rootVisualElement.Add(labelField);
 
             nameField = new TextField();
             nameField.RegisterCallback<KeyUpEvent>((evt) =>

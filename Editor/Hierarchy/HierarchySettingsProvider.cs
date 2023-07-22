@@ -1,257 +1,32 @@
-﻿using System;
-using System.Linq;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine.Serialization;
-using System.IO;
+using UnityEngine;
+using UnityEngine.UIElements;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
-    [Serializable]
-    internal class HierarchySettings : ScriptableObject
+    public static class HierarchySettingsProvider
     {
-        [Serializable]
-        public struct ThemeData
-        {
-            public Color colorRowEven;
-            public Color colorRowOdd;
-            public Color colorGrid;
-            public Color colorTreeView;
-            public Color colorLockIcon;
-            public Color tagColor;
-            public Color layerColor;
-            public Color comSelBGColor;
-            public Color selectionColor;
-            public Color colorHeaderTitle;
-            public Color colorHeaderBackground;
+        static HierarchySettings instance => HierarchySettings.instance;
 
-            public ThemeData(ThemeData themeData)
-            {
-                colorRowEven = themeData.colorRowEven;
-                colorRowOdd = themeData.colorRowOdd;
-                colorGrid = themeData.colorGrid;
-                colorTreeView = themeData.colorTreeView;
-                colorLockIcon = themeData.colorLockIcon;
-                tagColor = themeData.tagColor;
-                layerColor = themeData.layerColor;
-                comSelBGColor = themeData.comSelBGColor;
-                selectionColor = themeData.selectionColor;
-                colorHeaderTitle = themeData.colorHeaderTitle;
-                colorHeaderBackground = themeData.colorHeaderBackground;
-            }
+        static float TITLE_MARGIN_TOP = 14;
+        static float TITLE_MARGIN_BOTTOM = 8;
+        static float CONTENT_MARGIN_LEFT = 10;
 
-            public void BlendMultiply(Color blend)
-            {
-                colorRowEven = colorRowEven * blend;
-                colorRowOdd = colorRowOdd * blend;
-                colorGrid = colorGrid * blend;
-                colorTreeView = colorTreeView * blend;
-                colorLockIcon = colorLockIcon * blend;
-                tagColor = tagColor * blend;
-                layerColor = layerColor * blend;
-                comSelBGColor = comSelBGColor * blend;
-                selectionColor = selectionColor * blend;
-                colorHeaderTitle = colorHeaderTitle * blend;
-                colorHeaderBackground = colorHeaderBackground * blend;
-            }
-        }
-
-        [Serializable]
-        public struct HeaderTagData
-        {
-            public Color tagOne;
-            public Color tagTwo;
-            public Color tagThree;
-            public Color tagFour;
-            public Color tagFive;
-
-            public HeaderTagData(HeaderTagData tagData)
-            {
-                tagOne = tagData.tagOne;
-                tagTwo = tagData.tagTwo;
-                tagThree = tagData.tagThree;
-                tagFour = tagData.tagFour;
-                tagFive = tagData.tagFive;
-            }
-
-            public void BlendMultiply(Color blend)
-            {
-                tagOne = tagOne * blend;
-                tagTwo = tagTwo * blend;
-                tagThree = tagThree * blend;
-                tagFour = tagFour * blend;
-                tagFive = tagFive * blend;
-
-            }
-        }
-
-        ///<summary>Define background color using prefix.</summary>
-        [Serializable]
-        public struct InstantBackgroundColor
-        {
-            public bool active;
-            public bool useStartWith, useTag, useLayer;
-            public string startWith;
-            public string tag;
-            public LayerMask layer;
-            public Color color;
-        }
-
-        public enum ComponentSize
-        {
-            Small,
-            Normal,
-            Large
-        }
-
-        public enum ElementAlignment
-        {
-            AfterName,
-            Right
-        }
-
-        [Flags]
-        public enum ContentDisplay
-        {
-            Component = (1 << 0),
-            Tag = (1 << 1),
-            Layer = (1 << 2)
-        }
-
-        private static HierarchySettings instance;
-
-        public ThemeData personalTheme;
-        public ThemeData professionalTheme;
-        public ThemeData playmodeTheme;
-        private bool useThemePlaymode = false;
-
-        public ThemeData usedThemeData
-        {
-            get
-            {
-                if (EditorApplication.isPlayingOrWillChangePlaymode)
-                {
-                    if (useThemePlaymode == false)
-                    {
-                        playmodeTheme = new ThemeData(EditorGUIUtility.isProSkin ? professionalTheme : personalTheme);
-                        playmodeTheme.BlendMultiply(GUI.color);
-                        useThemePlaymode = true;
-                    }
-
-                    return playmodeTheme;
-                }
-                else
-                {
-                    useThemePlaymode = false;
-                    return EditorGUIUtility.isProSkin ? professionalTheme : personalTheme;
-                }
-            }
-        }
-
-        public HeaderTagData personalTagData;
-        public HeaderTagData professionalTagData;
-        public HeaderTagData playmodeTagData;
-        private bool useHeaderTagsPlaymode = false;
-
-        public HeaderTagData usedHeaderTagData
-        {
-            get
-            {
-                if (EditorApplication.isPlayingOrWillChangePlaymode)
-                {
-                    if (useHeaderTagsPlaymode == false)
-                    {
-                        playmodeTagData = new HeaderTagData(EditorGUIUtility.isProSkin ? professionalTagData : personalTagData);
-                        playmodeTagData.BlendMultiply(GUI.color);
-                        useHeaderTagsPlaymode = true;
-                    }
-
-                    return playmodeTagData;
-                }
-                else
-                {
-                    useHeaderTagsPlaymode = false;
-                    return EditorGUIUtility.isProSkin ? professionalTagData : personalTagData;
-                }
-            }
-        }
-
-        [HideInInspector] public bool activeHierarchy = true;
-        public bool displayCustomObjectIcon = true;
-        public bool displayTreeView = true;
-        public bool displayRowBackground = true;
-        public bool displayGrid = false;
-        [HideInInspector] public bool displayStaticButton = true;
-        public int offSetIconAfterName = 8;
-        public bool displayComponents = true;
-        public ElementAlignment componentAlignment = ElementAlignment.AfterName;
-
-        public enum ComponentDisplayMode
-        {
-            All = 0,
-            ScriptOnly = 1,
-            Specified = 2,
-            Ignore = 3
-        }
-
-        public ComponentDisplayMode componentDisplayMode = ComponentDisplayMode.Ignore;
-        public string[] components = new string[] {"Transform", "RectTransform"};
-        [HideInInspector] public int componentLimited = 0;
-        [Range(12, 16)] public int componentSize = 16;
-        public int componentSpacing = 0;
-        public bool displayTag = true;
-        public ElementAlignment tagAlignment = ElementAlignment.AfterName;
-        public bool displayLayer = true;
-        public ElementAlignment layerAlignment = ElementAlignment.AfterName;
-        [HideInInspector] public bool applyStaticTargetAndChild = true;
-        public bool applyTagTargetAndChild = false;
-        public bool applyLayerTargetAndChild = true;
-        public bool useInstantBackground = false;
-
-        public List<InstantBackgroundColor> instantBackgroundColors = new List<InstantBackgroundColor>();
-
-        public bool onlyDisplayWhileMouseEnter = false;
-        public ContentDisplay contentDisplay = ContentDisplay.Component | ContentDisplay.Tag | ContentDisplay.Layer;
-
-
-        public delegate void OnSettingsChangedCallback(string param);
-
-        public OnSettingsChangedCallback onSettingsChanged;
-
-        public void OnSettingsChanged(string param = "")
-        {
-            switch (param)
-            {
-                case nameof(componentSize):
-                    if (componentSize % 2 != 0) componentSize -= 1;
-                    break;
-
-                case nameof(componentSpacing):
-                    if (componentSpacing < 0) componentSpacing = 0;
-                    break;
-            }
-
-            onSettingsChanged?.Invoke(param);
-            hideFlags = HideFlags.None;
-        }
 
         [SettingsProvider]
-        static SettingsProvider UIElementSettingsProvider()
+        static SettingsProvider SettingsProvider()
         {
-            var provider = new SettingsProvider("Quartzified/Hierarchy", SettingsScope.Project)
+            SettingsProvider provider = new SettingsProvider("Quartzified/Hierarchy", SettingsScope.User)
             {
                 label = "Hierarchy",
 
                 activateHandler = (searchContext, rootElement) =>
                 {
-                    var settings = GetAssets();
-
-                    float TITLE_MARGIN_TOP = 14;
-                    float TITLE_MARGIN_BOTTOM = 8;
-                    float CONTENT_MARGIN_LEFT = 10;
+                    HierarchySettings settings = HierarchySettings.GetAssets();
 
                     HorizontalLayout horizontalLayout = new HorizontalLayout();
                     horizontalLayout.style.backgroundColor = new Color(0, 0, 0, 0.2f);
@@ -267,12 +42,12 @@ namespace Quartzified.Custom.Hierarchy
 
                     Label importButton = new Label();
                     importButton.StyleFontSize(14);
-                    importButton.StyleMargin(0, 0, 6,0 );
+                    importButton.StyleMargin(0, 0, 6, 0);
                     importButton.text = "  Import";
                     importButton.style.unityFontStyleAndWeight = FontStyle.Italic;
                     Color importExportButtonColor = new Color32(102, 157, 246, 255);
                     importButton.style.color = importExportButtonColor;
-                    importButton.RegisterCallback<PointerUpEvent>(evt => instance.ImportFromJson());
+                    importButton.RegisterCallback<PointerUpEvent>(evt => HierarchySettings.instance.ImportFromJson());
                     horizontalLayout.Add(importButton);
 
                     Label exportButton = new Label();
@@ -281,7 +56,7 @@ namespace Quartzified.Custom.Hierarchy
                     exportButton.text = "| Export";
                     exportButton.style.unityFontStyleAndWeight = FontStyle.Italic;
                     exportButton.style.color = importExportButtonColor;
-                    exportButton.RegisterCallback<PointerUpEvent>(evt => instance.ExportToJson());
+                    exportButton.RegisterCallback<PointerUpEvent>(evt => HierarchySettings.instance.ExportToJson());
                     horizontalLayout.Add(exportButton);
 
                     ScrollView scrollView = new ScrollView();
@@ -372,7 +147,7 @@ namespace Quartzified.Custom.Hierarchy
                     {
                         Undo.RecordObject(settings, "Change Settings");
 
-                        settings.componentAlignment = (ElementAlignment) evt.newValue;
+                        settings.componentAlignment = (HierarchySettings.ElementAlignment)evt.newValue;
                         settings.OnSettingsChanged(nameof(settings.componentAlignment));
                     });
                     componentAlignment.StyleMarginLeft(CONTENT_MARGIN_LEFT);
@@ -398,22 +173,22 @@ namespace Quartzified.Custom.Hierarchy
                     {
                         Undo.RecordObject(settings, "Change Settings");
 
-                        settings.componentDisplayMode = (ComponentDisplayMode) evt.newValue;
+                        settings.componentDisplayMode = (HierarchySettings.ComponentDisplayMode)evt.newValue;
                         switch (settings.componentDisplayMode)
                         {
-                            case ComponentDisplayMode.Specified:
+                            case HierarchySettings.ComponentDisplayMode.Specified:
                                 componentListInput.StyleDisplay(true);
                                 break;
 
-                            case ComponentDisplayMode.Ignore:
+                            case HierarchySettings.ComponentDisplayMode.Ignore:
                                 componentListInput.StyleDisplay(true);
                                 break;
 
-                            case ComponentDisplayMode.All:
+                            case HierarchySettings.ComponentDisplayMode.All:
                                 componentListInput.StyleDisplay(false);
                                 break;
 
-                            case ComponentDisplayMode.ScriptOnly:
+                            case HierarchySettings.ComponentDisplayMode.ScriptOnly:
                                 componentListInput.StyleDisplay(false);
                                 break;
                         }
@@ -421,19 +196,19 @@ namespace Quartzified.Custom.Hierarchy
                         settings.OnSettingsChanged(nameof(settings.componentDisplayMode));
                     });
 
-                    var componentSizeEnum = ComponentSize.Normal;
+                    var componentSizeEnum = HierarchySettings.ComponentSize.Normal;
                     switch (settings.componentSize)
                     {
                         case 12:
-                            componentSizeEnum = ComponentSize.Small;
+                            componentSizeEnum = HierarchySettings.ComponentSize.Small;
                             break;
 
                         case 14:
-                            componentSizeEnum = ComponentSize.Normal;
+                            componentSizeEnum = HierarchySettings.ComponentSize.Normal;
                             break;
 
                         case 16:
-                            componentSizeEnum = ComponentSize.Large;
+                            componentSizeEnum = HierarchySettings.ComponentSize.Large;
                             break;
                     }
 
@@ -446,15 +221,15 @@ namespace Quartzified.Custom.Hierarchy
 
                         switch (evt.newValue)
                         {
-                            case ComponentSize.Small:
+                            case HierarchySettings.ComponentSize.Small:
                                 settings.componentSize = 12;
                                 break;
 
-                            case ComponentSize.Normal:
+                            case HierarchySettings.ComponentSize.Normal:
                                 settings.componentSize = 14;
                                 break;
 
-                            case ComponentSize.Large:
+                            case HierarchySettings.ComponentSize.Large:
                                 settings.componentSize = 16;
                                 break;
                         }
@@ -511,7 +286,7 @@ namespace Quartzified.Custom.Hierarchy
                     {
                         Undo.RecordObject(settings, "Change Settings");
 
-                        settings.tagAlignment = (ElementAlignment) evt.newValue;
+                        settings.tagAlignment = (HierarchySettings.ElementAlignment)evt.newValue;
                         settings.OnSettingsChanged(nameof(settings.tagAlignment));
                     });
                     tagAlignment.StyleMarginLeft(CONTENT_MARGIN_LEFT);
@@ -553,7 +328,7 @@ namespace Quartzified.Custom.Hierarchy
                     {
                         Undo.RecordObject(settings, "Change Settings");
 
-                        settings.layerAlignment = (ElementAlignment) evt.newValue;
+                        settings.layerAlignment = (HierarchySettings.ElementAlignment)evt.newValue;
                         settings.OnSettingsChanged(nameof(settings.layerAlignment));
                     });
                     layerAlignment.StyleMarginLeft(CONTENT_MARGIN_LEFT);
@@ -586,7 +361,7 @@ namespace Quartzified.Custom.Hierarchy
                     {
                         Undo.RecordObject(settings, "Change Settings");
 
-                        settings.contentDisplay = (ContentDisplay) evt.newValue;
+                        settings.contentDisplay = (HierarchySettings.ContentDisplay)evt.newValue;
                         settings.OnSettingsChanged(nameof(settings.contentDisplay));
                     });
                     contentMaskEnumFlags.style.marginLeft = CONTENT_MARGIN_LEFT;
@@ -723,38 +498,6 @@ namespace Quartzified.Custom.Hierarchy
                         });
                         verticalLayout.Add(layerColor);
 
-                        ColorField colorHeaderTitle = new ColorField("Header Title");
-                        colorHeaderTitle.value = settings.usedThemeData.colorHeaderTitle;
-                        colorHeaderTitle.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        colorHeaderTitle.RegisterValueChangedCallback((evt) =>
-                        {
-                            Undo.RecordObject(settings, "Change Settings");
-
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTheme.colorHeaderTitle = evt.newValue;
-                            else
-                                settings.personalTheme.colorHeaderTitle = evt.newValue;
-
-                            settings.OnSettingsChanged();
-                        });
-                        verticalLayout.Add(colorHeaderTitle);
-
-                        ColorField colorHeaderBackground = new ColorField("Header Background");
-                        colorHeaderBackground.value = settings.usedThemeData.colorHeaderBackground;
-                        colorHeaderBackground.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        colorHeaderBackground.RegisterValueChangedCallback((evt) =>
-                        {
-                            Undo.RecordObject(settings, "Change Settings");
-
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTheme.colorHeaderBackground = evt.newValue;
-                            else
-                                settings.personalTheme.colorHeaderBackground = evt.newValue;
-
-                            settings.OnSettingsChanged();
-                        });
-                        verticalLayout.Add(colorHeaderBackground);
-
                         ColorField comSelBGColor = new ColorField("Component Selection");
                         comSelBGColor.value = settings.usedThemeData.comSelBGColor;
                         comSelBGColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
@@ -785,95 +528,44 @@ namespace Quartzified.Custom.Hierarchy
                     }
                     else
                     {
-                        ColorField tagOneColor = new ColorField("Header (1)");
-                        tagOneColor.value = settings.usedHeaderTagData.tagOne;
-                        tagOneColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        tagOneColor.RegisterValueChangedCallback((evt) =>
+                        var headerCount = new IntegerField();
+                        headerCount.label = "Header Tag Count";
+                        headerCount.value = settings.tagData.headerCount;
+                        headerCount.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                        headerCount.RegisterValueChangedCallback((evt) =>
                         {
                             Undo.RecordObject(settings, "Change Settings");
 
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTagData.tagOne = evt.newValue;
-                            else
-                                settings.personalTagData.tagOne = evt.newValue;
+                            int value = evt.newValue;
+
+                            if (evt.newValue > 32)
+                            {
+                                value = 32;
+                                headerCount.value = value;
+                            }
+
+                            settings.tagData.headerCount = value;
 
                             settings.OnSettingsChanged();
+
+                            UpdateHeaderTags(settings, value, verticalLayout);
+
+                            Debug.Log("Value Changed");
                         });
-                        verticalLayout.Add(tagOneColor);
+                        verticalLayout.Add(headerCount);
 
-                        ColorField tagTwoColor = new ColorField("Header (2)");
-                        tagTwoColor.value = settings.usedHeaderTagData.tagTwo;
-                        tagTwoColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        tagTwoColor.RegisterValueChangedCallback((evt) =>
-                        {
-                            Undo.RecordObject(settings, "Change Settings");
-
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTagData.tagTwo = evt.newValue;
-                            else
-                                settings.personalTagData.tagTwo = evt.newValue;
-
-                            settings.OnSettingsChanged();
-                        });
-                        verticalLayout.Add(tagTwoColor);
-
-                        ColorField tagThreeColor = new ColorField("Header (3)");
-                        tagThreeColor.value = settings.usedHeaderTagData.tagThree;
-                        tagThreeColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        tagThreeColor.RegisterValueChangedCallback((evt) =>
-                        {
-                            Undo.RecordObject(settings, "Change Settings");
-
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTagData.tagThree = evt.newValue;
-                            else
-                                settings.personalTagData.tagThree = evt.newValue;
-
-                            settings.OnSettingsChanged();
-                        });
-                        verticalLayout.Add(tagThreeColor);
-
-                        ColorField tagFourColor = new ColorField("Header (4)");
-                        tagFourColor.value = settings.usedHeaderTagData.tagFour;
-                        tagFourColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        tagFourColor.RegisterValueChangedCallback((evt) =>
-                        {
-                            Undo.RecordObject(settings, "Change Settings");
-
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTagData.tagFour = evt.newValue;
-                            else
-                                settings.personalTagData.tagFour = evt.newValue;
-
-                            settings.OnSettingsChanged();
-                        });
-                        verticalLayout.Add(tagFourColor);
-
-                        ColorField tagFiveColor = new ColorField("Header (5)");
-                        tagFiveColor.value = settings.usedHeaderTagData.tagFive;
-                        tagFiveColor.StyleMarginLeft(CONTENT_MARGIN_LEFT);
-                        tagFiveColor.RegisterValueChangedCallback((evt) =>
-                        {
-                            Undo.RecordObject(settings, "Change Settings");
-
-                            if (EditorGUIUtility.isProSkin)
-                                settings.professionalTagData.tagFive = evt.newValue;
-                            else
-                                settings.personalTagData.tagFive = evt.newValue;
-
-                            settings.OnSettingsChanged();
-                        });
-                        verticalLayout.Add(tagFiveColor);
+                        UpdateHeaderTags(settings, headerCount.value, verticalLayout);
                     }
-
-                        Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+                    Undo.undoRedoPerformed -= OnUndoRedoPerformed;
                     Undo.undoRedoPerformed += OnUndoRedoPerformed;
                 },
 
                 deactivateHandler = () => Undo.undoRedoPerformed -= OnUndoRedoPerformed,
 
-                keywords = new HashSet<string>(new[] {"Hierarchy"})
+                keywords = new HashSet<string>(new[] { "Hierarchy" })
             };
+
+            provider.Repaint();
 
             return provider;
         }
@@ -888,96 +580,89 @@ namespace Quartzified.Custom.Hierarchy
             }
         }
 
-        internal static HierarchySettings GetAssets()
+        static void UpdateHeaderTags(HierarchySettings settings, int count, VerticalLayout layout)
         {
-            if (instance != null)
-                return instance;
-
-            var guids = AssetDatabase.FindAssets(string.Format("t:{0}", typeof(HierarchySettings).Name));
-
-            for (int i = 0; i < guids.Length; i++)
+            int difference = count - settings.tagData.headerTag.Count;
+            if (difference > 0)
             {
-                instance = AssetDatabase.LoadAssetAtPath<HierarchySettings>(AssetDatabase.GUIDToAssetPath(guids[i]));
-                if (instance != null)
-                    return instance;
+                ExpandList(settings.tagData.headerTag, count);
+                ExpandList(settings.tagData.headerColor, count);
+            }
+            else if (difference < 0)
+            {
+                ReduceList(settings.tagData.headerTag, count);
+                ReduceList(settings.tagData.headerColor, count);
             }
 
-            return instance = CreateAssets();
-        }
-
-        internal static HierarchySettings CreateAssets()
-        {
-            string path = EditorUtility.SaveFilePanelInProject("Save as...", "Hierarchy Settings", "asset", "");
-            if (path.Length > 0)
+            for (int i = 0; i < settings.tagData.headerTag.Count; i++)
             {
-                HierarchySettings settings = ScriptableObject.CreateInstance<HierarchySettings>();
-                AssetDatabase.CreateAsset(settings, path);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-                EditorUtility.FocusProjectWindow();
-                Selection.activeObject = settings;
-                return settings;
-            }
+                int index = i;
 
-            return null;
-        }
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-        internal bool ImportFromJson()
-        {
-            string path = EditorUtility.OpenFilePanel("Import Hierarchy settings", "", "json");
-            if (path.Length > 0)
-            {
-                string json = string.Empty;
-                using (StreamReader sr = new StreamReader(path))
+                TextField tagName = new TextField("Tag Name: " + index);
+                tagName.value = settings.tagData.headerTag[i];
+                tagName.StyleMarginLeft(CONTENT_MARGIN_LEFT);
+                tagName.StyleWidth(250);
+                tagName.RegisterValueChangedCallback((evt) =>
                 {
-                    json = sr.ReadToEnd();
-                }
+                    Undo.RecordObject(settings, "Change Settings");
 
-                if (string.IsNullOrEmpty(json)) return false;
-                JsonUtility.FromJsonOverwrite(json, this);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-                return true;
+                    settings.tagData.headerTag[index] = evt.newValue;
+
+                    settings.OnSettingsChanged();
+                }); 
+                horizontalLayout.Add(tagName);
+
+                ColorField tagColor = new ColorField("Tag Color: " + index);
+                tagColor.value = settings.tagData.headerColor[index];
+                tagColor.RegisterValueChangedCallback((evt) =>
+                {
+                    Undo.RecordObject(settings, "Change Settings");
+
+                    settings.tagData.headerColor[index] = evt.newValue;
+
+                    settings.OnSettingsChanged();
+                });
+                horizontalLayout.Add(tagColor);
+
+
+                layout.Add(horizontalLayout);
             }
-
-            return false;
         }
 
-        internal TextAsset ExportToJson()
+        public static void ExpandList<T>(List<T> originalList, int newSize)
         {
-            string path = EditorUtility.SaveFilePanelInProject("Export Hierarchy settings as...", "Hierarchy Settings", "json", "");
-            if (path.Length > 0)
+            int countToAdd = newSize - originalList.Count;
+            if (countToAdd > 0)
             {
-                string json = JsonUtility.ToJson(instance, true);
-                using (StreamWriter sw = new StreamWriter(path))
-                {
-                    sw.Write(json);
-                }
-
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-                EditorUtility.FocusProjectWindow();
-                TextAsset asset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
-                Selection.activeObject = asset;
-                return asset;
+                T defaultElement = default(T); // Default value for the list's element type
+                originalList.AddRange(Enumerable.Repeat(defaultElement, countToAdd));
             }
+        }
 
-            return null;
+        public static void ReduceList<T>(List<T> originalList, int newSize)
+        {
+            if (originalList.Count > newSize)
+            {
+                originalList.RemoveRange(newSize, originalList.Count - newSize);
+            }
+        }
+
+        static T[] ExpandArray<T>(T[] originalArray, int newSize)
+        {
+            T[] newArray = new T[newSize];
+            Array.Copy(originalArray, newArray, Mathf.Min(originalArray.Length, newSize));
+            return newArray;
+        }
+
+        static T[] ReduceArray<T>(T[] originalArray, int newSize)
+        {
+            T[] newArray = new T[newSize];
+            Array.Copy(originalArray, newArray, Mathf.Min(originalArray.Length, newSize));
+            return newArray;
         }
     }
 
-    [CustomEditor(typeof(HierarchySettings))]
-    internal class SettingsInspector : Editor
-    {
-        HierarchySettings settings;
-
-        void OnEnable() => settings = target as HierarchySettings;
-
-        public override void OnInspectorGUI()
-        {
-            EditorGUILayout.HelpBox("Go to Edit -> Project Settings -> Quartzified /Hierarchy", MessageType.Info);
-            if (GUILayout.Button("Open Settings"))
-                SettingsService.OpenProjectSettings("Quartzified/Hierarchy");
-        }
-    }
 }
+

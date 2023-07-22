@@ -7,3 +7,6 @@ build/**
 .gitlab-ci.yml
 build.bat
 build.sh
+Scenes/**
+Scripts/**
+Tests/**

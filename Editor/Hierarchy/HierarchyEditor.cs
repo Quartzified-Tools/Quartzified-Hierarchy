@@ -5,17 +5,13 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEditor.Experimental.SceneManagement;
 using UnityEditorInternal;
 using UnityEditor.Callbacks;
-using UnityEditor.UIElements;
-using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
 using System.Text.RegularExpressions;
 
-namespace Quartzified.Custom.Hierarchy
+namespace Quartzified.Tools.Hierarchy
 {
     [InitializeOnLoad]
     public sealed class HierarchyEditor
@@ -30,6 +26,7 @@ namespace Quartzified.Custom.Hierarchy
             {
                 if (instance == null)
                     instance = new HierarchyEditor();
+
                 return instance;
             }
             private set { instance = value; }
@@ -47,11 +44,6 @@ namespace Quartzified.Custom.Hierarchy
         HierarchySettings.ThemeData ThemeData
         {
             get { return settings.usedThemeData; }
-        }
-
-        HierarchySettings.HeaderTagData HeaderTagData
-        {
-            get { return settings.usedHeaderTagData; }
         }
 
         int deepestRow = int.MinValue;
@@ -93,80 +85,53 @@ namespace Quartzified.Custom.Hierarchy
         {
             GameObject hierarchyObject = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 
-            if(hierarchyObject != null && hierarchyObject.name.StartsWith("%", System.StringComparison.Ordinal))
+            if(hierarchyObject != null)
             {
-                string newName = hierarchyObject.name;
-                switch (GetFirstSurroundedString(hierarchyObject.name).ToLower())
+                HierarchySettings settings = HierarchySettings.instance;
+                HierarchySettings.HeaderTagData data = settings?.tagData;
+                selectionRect.width = selectionRect.width - 8;
+
+                if (data == null)
+                    return; 
+
+                for (int i = 0; i < data.headerCount; i++)
                 {
-                    case "red":
-                        newName = newName.Substring(5, newName.Length - 5);
-                        ChangeHierarchyItem(selectionRect, newName, Color.red);
-                        break;
-                    case "blue":
-                        newName = newName.Substring(6, newName.Length - 6);
-                        ChangeHierarchyItem(selectionRect, newName, Color.blue);
-                        break;
-                    case "cyan":
-                        newName = newName.Substring(6, newName.Length - 6);
-                        ChangeHierarchyItem(selectionRect, newName, Color.cyan);
-                        break;
-                    case "green":
-                        newName = newName.Substring(7, newName.Length - 7);
-                        ChangeHierarchyItem(selectionRect, newName, Color.green);
-                        break;
-                    case "yellow":
-                        newName = newName.Substring(8, newName.Length - 8);
-                        ChangeHierarchyItem(selectionRect, newName, Color.yellow);
-                        break;
-                    case "1":
-                        newName = newName.Substring(3, newName.Length - 3);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagOne);
-                        break;
-                    case "one":
-                        newName = newName.Substring(5, newName.Length - 5);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagOne);
-                        break;
-                    case "2":
-                        newName = newName.Substring(3, newName.Length - 3);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagTwo);
-                        break;
-                    case "two":
-                        newName = newName.Substring(5, newName.Length - 5);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagTwo);
-                        break;
-                    case "3":
-                        newName = newName.Substring(3, newName.Length - 3);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagThree);
-                        break;
-                    case "three":
-                        newName = newName.Substring(7, newName.Length - 7);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagThree);
-                        break;
-                    case "4":
-                        newName = newName.Substring(3, newName.Length - 3);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFour);
-                        break;
-                    case "four":
-                        newName = newName.Substring(6, newName.Length - 6);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFour);
-                        break;
-                    case "5":
-                        newName = newName.Substring(3, newName.Length - 3);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFive);
-                        break;
-                    case "five":
-                        newName = newName.Substring(6, newName.Length - 6);
-                        ChangeHierarchyItem(selectionRect, newName, HeaderTagData.tagFive);
-                        break;
+                    if (string.IsNullOrEmpty(data.headerTag[i]))
+                        continue;
+
+                    string newName = hierarchyObject.name;
+                    int charCount = data.headerTag[i].Length + 1;
+
+                    string[] objectWords = hierarchyObject.name.Split(' ');
+
+                    if (objectWords.Length <= 1)
+                        return;
+
+                    if (objectWords[0].ToLower().Equals(data.headerTag[i].ToLower(), StringComparison.Ordinal))
+                    {
+                        newName = newName.Substring(charCount, newName.Length - charCount);
+                        ChangeHierarchyItem(selectionRect, newName, data.headerColor[i]);
+                    }
                 }
             }
+
         }
 
         static void ChangeHierarchyItem(Rect selectionRect, string name, Color color)
         {
             color.a = 1;
             EditorGUI.DrawRect(selectionRect, color);
-            EditorGUI.DropShadowLabel(selectionRect, name);
+
+            Rect nameRect = selectionRect;
+            nameRect.center = new Vector2(nameRect.center.x + (nameRect.width / 2) - name.Length * 4, nameRect.center.y);
+
+            GUIStyle style = new GUIStyle();
+            style.fontStyle = FontStyle.Bold;
+            style.fontSize = 14;
+            style.richText = true;
+            style.normal.textColor = Color.white;
+
+            EditorGUI.LabelField(nameRect, name, style);
         }
 
         static string[] GetSurroundedString(string value)
@@ -489,11 +454,6 @@ namespace Quartzified.Custom.Hierarchy
         void OnPrefabStageClosing(PrefabStage stage)
         {
             prefabStageChanged = true;
-
-            for (int i = 0; i < HierarchyWindow.windows.Count; ++i)
-            {
-                HierarchyWindow.windows[i].Reflection();
-            }
         }
 
         void HierarchyOnGUI(int selectionID, Rect selectionRect)
@@ -568,11 +528,6 @@ namespace Quartzified.Custom.Hierarchy
 
                 if (deepestRow > previousRowIndex)
                     deepestRow = previousRowIndex;
-
-                // if (settings.displayVersion)
-                //     BottomRightArea(selectionRect);
-
-                // Background(selectionRect);
             }
 
             if (rowItem.isNull)
@@ -636,7 +591,10 @@ namespace Quartzified.Custom.Hierarchy
 
                 rowItem.nameRect.x += 16;
 
-                var isPrefabMode = PrefabStageUtility.GetCurrentPrefabStage() != null ? true : false;
+                bool isPrefab = PrefabUtility.IsPartOfPrefabAsset(rowItem.gameObject);
+                bool isInstance = PrefabUtility.IsPartOfPrefabInstance(rowItem.gameObject);
+                bool isPrefabParent = PrefabUtility.IsAnyPrefabInstanceRoot(rowItem.gameObject);
+                bool isPrefabMode = PrefabStageUtility.GetCurrentPrefabStage() != null ? true : false;
 
                 if (settings.displayRowBackground && deepestRow != rowItem.rowIndex)
                 {
@@ -663,16 +621,19 @@ namespace Quartzified.Custom.Hierarchy
 
                 widthUse = WidthUse.zero;
                 widthUse.left += GLOBAL_SPACE_OFFSET_LEFT;
-                if (isPrefabMode) widthUse.left -= 2;
+                if (isPrefabMode) widthUse.left -= 2;   
                 widthUse.afterName = rowItem.nameRect.x + rowItem.nameRect.width;
 
                 widthUse.afterName += settings.offSetIconAfterName;
 
                 DisplayEditableIcon();
 
-                // DisplayNoteIcon();
+                //DisplayNoteIcon();
 
                 widthUse.afterName += 8;
+
+                if(isInstance && isPrefabParent)
+                    widthUse.right += 14;
 
                 if (settings.displayTag && !rowItem.gameObject.CompareTag("Untagged"))
                 {
@@ -879,7 +840,6 @@ namespace Quartzified.Custom.Hierarchy
                 GUI.DrawTexture(rect, Resources.PixelWhite);
                 GUI.color = guiColor;
                 GUI.DrawTexture(rect, icon, ScaleMode.ScaleToFit);
-                //ReplaceObjectIcon(rowItem.ID, icon);
             }
         }
 
@@ -1124,7 +1084,7 @@ namespace Quartzified.Custom.Hierarchy
 
                 if (currentEvent.type == EventType.MouseUp)
                 {
-                    if (currentEvent.button == 2)
+                    if (currentEvent.button == 0)
                     {
                         List<UnityEngine.Object> inspectorComponents = new List<UnityEngine.Object>();
 
@@ -1134,9 +1094,9 @@ namespace Quartzified.Custom.Hierarchy
                         if (!selectedComponents.ContainsKey(comHash))
                             inspectorComponents.Add(component);
 
-                        var window = InstantInspector.OpenEditor();
+                        var window = QuickInspect.OpenEditor();
                         window.Fill(inspectorComponents,
-                            currentEvent.alt ? InstantInspector.FillMode.Add : InstantInspector.FillMode.Default);
+                            currentEvent.alt ? QuickInspect.FillMode.Add : QuickInspect.FillMode.Default);
                         window.Focus();
 
                         currentEvent.Use();
@@ -1154,26 +1114,6 @@ namespace Quartzified.Custom.Hierarchy
                 selectedComponents.Clear();
                 activeComponent = null;
             }
-        }
-
-        void BottomRightArea(Rect rect)
-        {
-            // var content = new GUIContent(string.Format("{0}", VERSION));
-            // rect = RectFromRight(rect, EditorStyles.miniBoldLabel.CalcSize(content).x, 0);
-            // rect.y += Screen.height - 59;
-            // GUI.color = new Color(.5f, .5f, .5f, .2f);
-            // GUI.Label(rect, content, EditorStyles.miniBoldLabel);
-            // GUI.color = Color.white;
-        }
-
-        void Background(Rect rect)
-        {
-            // rect.y += 16;
-            // rect.xMin = 0;
-            // rect.height = Screen.height;
-            // GUI.color = new Color(.4f, .4f, .4f, 1);
-            // GUI.DrawTexture(rect, Assets.PixelWhite);
-            // GUI.color = Color.white;
         }
 
         void DisplayTag()
@@ -1511,243 +1451,5 @@ namespace Quartzified.Custom.Hierarchy
             }
         }
 
-        sealed class HierarchyWindow
-        {
-            public static Dictionary<int, EditorWindow> instances = new Dictionary<int, EditorWindow>();
-            public static List<HierarchyWindow> windows = new List<HierarchyWindow>();
-
-            public int instanceID = Int32.MinValue;
-            public EditorWindow editorWindow;
-            public object treeview;
-
-            public HierarchyWindow(EditorWindow editorWindow)
-            {
-                this.editorWindow = editorWindow;
-
-                instanceID = this.editorWindow.GetInstanceID();
-
-                instances.Add(instanceID, this.editorWindow);
-                windows.Add(this);
-
-                // Debug.Log(string.Format("HierarchyWindow {0} Instanced.", instanceID));
-
-                Reflection();
-            }
-
-            public void Reflection()
-            {
-                // treeview = m_TreeView.GetValue(m_SceneHierarchy.GetValue(editorWindow));
-            }
-
-            public void Dispose()
-            {
-                editorWindow = null;
-                treeview = null;
-                instances.Remove(instanceID);
-                windows.Remove(this);
-
-                // Debug.Log(string.Format("HierarchyWindow {0} Disposed.", instanceID));
-            }
-
-            public TreeViewItem GetItemAndRowIndex(int id, out int row)
-            {
-                row = -1;
-                // if (treeview == null) return null;
-                // var item = GetItemAndRowIndexMethod.Invoke(treeview, new object[] {id, row}) as TreeViewItem;
-                // return item;
-                return null;
-            }
-
-            public void SetWindowTitle(string value)
-            {
-                if (editorWindow == null)
-                    return;
-
-                editorWindow.titleContent.text = value;
-            }
-        }
-
-        sealed class RowItem
-        {
-            public int ID = int.MinValue;
-            public Rect rect;
-            public Rect nameRect;
-            public int rowIndex = 0;
-            public GameObject gameObject;
-            public bool isNull = true;
-            public bool isPrefab = false;
-            public bool isPrefabMissing = false;
-            public bool isRootObject = false;
-            public bool isSelected = false;
-            public bool isFirstRow = false;
-            public bool isFirstElement = false;
-            public bool isDirty = false;
-            public bool isMouseHovering = false;
-
-            public string name
-            {
-                get { return isNull ? "Null" : gameObject.name; }
-            }
-
-            public int childCount
-            {
-                get { return gameObject.transform.childCount; }
-            }
-
-            public Scene Scene
-            {
-                get { return gameObject.scene; }
-            }
-
-            public bool isStatic
-            {
-                get { return isNull ? false : gameObject.isStatic; }
-            }
-
-            public RowItem()
-            {
-            }
-
-            public void Dispose()
-            {
-                ID = int.MinValue;
-                gameObject = null;
-                rect = Rect.zero;
-                nameRect = Rect.zero;
-                rowIndex = 0;
-                isNull = true;
-                isRootObject = false;
-                isSelected = false;
-                isFirstRow = false;
-                isFirstElement = false;
-                isDirty = false;
-                isMouseHovering = false;
-            }
-        }
-
-        internal sealed class Resources
-        {
-            private static Texture2D pixelWhite;
-
-            public static Texture2D PixelWhite
-            {
-                get
-                {
-                    if (pixelWhite == null)
-                    {
-                        pixelWhite = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                        pixelWhite.SetPixel(0, 0, Color.white);
-                        pixelWhite.Apply();
-                    }
-
-                    return pixelWhite;
-                }
-            }
-
-            private static Texture2D alphaTexture;
-
-            public static Texture2D AlphaTexture
-            {
-                get
-                {
-                    if (alphaTexture == null)
-                    {
-                        alphaTexture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
-                        for (int x = 0; x < 16; ++x)
-                            for (int y = 0; y < 16; ++y)
-                                alphaTexture.SetPixel(x, y, Color.clear);
-                        alphaTexture.Apply();
-                    }
-
-                    return alphaTexture;
-                }
-            }
-
-            private static Texture2D ramp8x8White;
-
-            public static Texture2D Ramp8x8White
-            {
-                get
-                {
-                    if (ramp8x8White == null)
-                    {
-                        ramp8x8White = new byte[]
-                        {
-                            137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 16,
-                            0, 0, 0, 16, 8, 6, 0, 0, 0, 31, 243, 255, 97, 0, 0, 0, 40, 73, 68, 65, 84, 56, 17, 99, 252,
-                            15, 4, 12, 12,
-                            12, 31, 8, 224, 143, 184, 228, 153, 128, 18, 20, 129, 81, 3, 24, 24, 70, 195, 96, 52, 12,
-                            64, 153, 104, 224,
-                            211, 1, 0, 153, 171, 18, 45, 165, 62, 165, 211, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130
-                        }.PNGImageDecode();
-                    }
-
-                    return ramp8x8White;
-                }
-            }
-
-            internal static readonly Texture lockIconOn = EditorGUIUtility.IconContent("LockIcon-On").image;
-        }
-
-        internal static class Styles
-        {
-            internal static GUIStyle lineStyle = new GUIStyle("TV Line");
-
-            internal static GUIStyle PR_DisabledLabel = new GUIStyle("PR DisabledLabel");
-
-            internal static GUIStyle PR_PrefabLabel = new GUIStyle("PR PrefabLabel");
-
-            internal static GUIStyle PR_DisabledPrefabLabel = new GUIStyle("PR DisabledPrefabLabel");
-
-            internal static GUIStyle PR_BrokenPrefabLabel = new GUIStyle("PR BrokenPrefabLabel");
-
-            internal static GUIStyle PR_DisabledBrokenPrefabLabel = new GUIStyle("PR DisabledBrokenPrefabLabel");
-
-            internal static GUIStyle Tag = new GUIStyle()
-            {
-                padding = new RectOffset(3, 4, 0, 0),
-                alignment = TextAnchor.MiddleCenter,
-                fontStyle = FontStyle.Italic,
-                fontSize = 8,
-                richText = true,
-                border = new RectOffset(12, 12, 8, 8),
-            };
-
-            internal static GUIStyle Layer = new GUIStyle()
-            {
-                padding = new RectOffset(3, 4, 0, 0),
-                alignment = TextAnchor.MiddleCenter,
-                fontStyle = FontStyle.Italic,
-                fontSize = 8,
-                richText = true,
-                border = new RectOffset(12, 12, 8, 8),
-            };
-
-            [System.Obsolete]
-            internal static GUIStyle DirtyLabel = new GUIStyle(EditorStyles.label)
-            {
-                padding = new RectOffset(-1, 0, 0, 0),
-                margin = new RectOffset(0, 0, 0, 0),
-                border = new RectOffset(0, 0, 0, 0),
-                alignment = TextAnchor.UpperLeft,
-            };
-
-            internal static GUIStyle Header = new GUIStyle(TreeBoldLabel)
-            {
-                richText = true,
-                normal = new GUIStyleState() { textColor = Color.white }
-            };
-
-            internal static GUIStyle TreeBoldLabel
-            {
-                get { return TreeView.DefaultStyles.boldLabel; }
-            }
-
-            internal static GUIStyle TreeLabel = new GUIStyle(TreeView.DefaultStyles.label)
-            {
-                richText = true,
-                normal = new GUIStyleState() { textColor = Color.white }
-            };
-        }
     }
 }
