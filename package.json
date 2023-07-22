@@ -1,6 +1,6 @@
 {
   "name": "com.quartzified.hierarchy",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "Quartzified Hierarchy",
   "description": "Unity Hierarchy Extension",
   "unity": "2020.3",
